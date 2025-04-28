@@ -123,6 +123,22 @@ public class QuizSetResource {
       return Response.status(Response.Status.CREATED).entity(response).build();
    }
 
+   @GET
+   @Path("/questions/{id}")
+   public Response getQuestionById(@PathParam("id") Long id) {
+      QuizQuestion question = QuizQuestion.findById(id);
+      if (question == null) {
+         return Response.status(Response.Status.NOT_FOUND).build();
+      }
+
+      return Response.ok(new QuestionResponse(
+            question.id,
+            question.question,
+            question.options,
+            question.answer,
+            question.quizSet.id)).build();
+   }
+
    @PUT
    @Path("/questions/{id}")
    @Transactional

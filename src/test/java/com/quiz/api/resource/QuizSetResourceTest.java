@@ -97,7 +97,7 @@ class QuizSetResourceTest {
    @Test
    void testGetQuizSetNotFound() {
       given()
-            .when().get("/quiz-sets/1")
+            .when().get("/quiz-sets/99")
             .then()
             .statusCode(404);
    }
@@ -162,6 +162,44 @@ class QuizSetResourceTest {
 
       given()
             .when().delete("/quiz-sets/" + id)
+            .then()
+            .statusCode(404);
+   }
+
+   @Test
+   void testgetQuestionByID() {
+      QuizSet quizSet = createSampleQuizSet();
+
+      QuestionRequest createRequest = new QuestionRequest();
+      createRequest.question = "Apa ibu kota Malaysia?";
+      createRequest.options = "[\"Kuala Lumpur\", \"Jakarta\", \"Bangkok\", \"Hanoi\"]";
+      createRequest.answer = "Kuala Lumpur";
+      createRequest.quizSetId = quizSet.id;
+
+      Long questionId = given()
+            .contentType(ContentType.JSON)
+            .body(createRequest)
+            .when()
+            .post("/quiz-sets/questions")
+            .then()
+            .statusCode(201)
+            .extract()
+            .jsonPath()
+            .getLong("id");
+
+      given()
+            .when()
+            .get("/quiz-sets/questions/" + questionId)
+            .then()
+            .statusCode(200);
+   }
+
+   @Test
+   void testgetQuestionByIDNotFound() {
+
+      given()
+            .when()
+            .get("/quiz-sets/questions/99")
             .then()
             .statusCode(404);
    }
@@ -263,7 +301,7 @@ class QuizSetResourceTest {
       createRequest.question = "Apa ibu kota Malaysia?";
       createRequest.options = "[\"Kuala Lumpur\", \"Jakarta\", \"Bangkok\", \"Hanoi\"]";
       createRequest.answer = "Kuala Lumpur";
-      createRequest.quizSetId = (long) 1;
+      createRequest.quizSetId = (long) 99;
 
       given()
             .contentType(ContentType.JSON)
