@@ -1,0 +1,37 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db-quiz
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: quiz_db
+      MYSQL_USER: quiz_user
+      MYSQL_PASSWORD: quiz_pass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - quiznet
+
+  quiz-api:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: quiz-api-compose
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - quiznet
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/quiz_db
+      DB_USER: quiz_user
+      DB_PASSWORD: quiz_pass
+
+volumes:
+  mysql_data:
+
+networks:
+  quiznet:

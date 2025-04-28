@@ -1,0 +1,32 @@
+# ./mvnw clean package -DskipTests
+# docker build -f src/main/docker/Dockerfile.jvm -t quiz-api-jvm .
+
+# === Stage 1: Build Quarkus App ===
+# FROM maven:3.9.6-eclipse-temurin-17 AS build
+# WORKDIR /build
+# COPY . .
+# RUN chmod +x ./mvnw
+# RUN ./mvnw clean package -DskipTests
+
+# === Stage 2: Runtime Image ===
+
+FROM registry.access.redhat.com/ubi9/openjdk-17:1.21
+
+# We make four distinct layers so if there are application changes the library layers can be re-used
+# COPY --from=build /build/target/quarkus-app/lib/ /deployments/lib/
+# COPY --from=build /build/target/quarkus-app/*.jar /deployments/
+# COPY --from=build /build/target/quarkus-app/app/ /deployments/app/
+# COPY --from=build /build/target/quarkus-app/quarkus/ /deployments/quarkus/
+
+COPY target/quarkus-app/lib/ /deployments/lib/
+COPY target/quarkus-app/*.jar /deployments/
+COPY target/quarkus-app/app/ /deployments/app/
+COPY target/quarkus-app/quarkus/ /deployments/quarkus/
+
+EXPOSE 8080
+USER 185
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
+

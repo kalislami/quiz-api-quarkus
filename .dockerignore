@@ -1,0 +1,17 @@
+# Ignore build artifacts, kecuali quarkus-app
+target/*
+!target/quarkus-app/**
+
+# Ignore VCS dan IDE files
+.git/
+.idea/
+*.iml
+
+# Ignore logs & lainnya
+*.log
+.DS_Store
+
+# Opsional: dokumen yang tidak perlu masuk ke image
+README.md
+LICENSE
+*.md
