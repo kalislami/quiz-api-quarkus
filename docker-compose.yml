@@ -1,37 +1,35 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: mysql-db-quiz
-    ports:
-      - "3306:3306"
     environment:
-      MYSQL_DATABASE: quiz_db
-      MYSQL_USER: quiz_user
-      MYSQL_PASSWORD: quiz_pass
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-quiz_db}
+      MYSQL_USER: ${MYSQL_APP_USER:-quiz_user}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-quiz_pass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local_root_pass}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - quiznet
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   quiz-api:
     build:
       context: .
       dockerfile: src/main/docker/Dockerfile.jvm
-    container_name: quiz-api-compose
     ports:
-      - "8080:8080"
+      - "${HTTP_PORT:-8080}:8080"
     depends_on:
-      - mysql
-    networks:
-      - quiznet
+      mysql:
+        condition: service_healthy
     environment:
-      DB_URL: jdbc:mysql://mysql:3306/quiz_db
-      DB_USER: quiz_user
-      DB_PASSWORD: quiz_pass
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-quiz_db}
+      DB_USER: ${MYSQL_APP_USER:-quiz_user}
+      DB_PASSWORD: ${MYSQL_APP_PASSWORD:-quiz_pass}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
 
 volumes:
   mysql_data:
-
-networks:
-  quiznet:

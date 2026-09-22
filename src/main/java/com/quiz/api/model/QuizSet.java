@@ -1,7 +1,5 @@
 package com.quiz.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class QuizSet extends PanacheEntity {
+public class QuizSet {
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   public Long id;
 
    @NotBlank(message = "Judul tidak boleh kosong")
    @Column(nullable = false)
@@ -20,9 +21,8 @@ public class QuizSet extends PanacheEntity {
    @Column(length = 1024)
    public String description;
 
-   @JsonIgnore
    @OneToMany(mappedBy = "quizSet", cascade = CascadeType.ALL, orphanRemoval = true)
-   public List<QuizQuestion> questions;
+   public List<QuizQuestion> questions = new ArrayList<>();
 
    @ElementCollection
    @CollectionTable(name = "QuizTag", joinColumns = @JoinColumn(name = "quiz_set_id"))
